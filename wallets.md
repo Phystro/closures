@@ -25,42 +25,41 @@ Results should have their columns as:
 
 Results should be sorted in ascending order by wallet. Only transactions in 2021 are to be included.
 
-`
-
-    WITH ColdWallets AS (
-        SELECT DISTINCT sender AS wallet
-        FROM TRANSACTIONS
-        WHERE EXTRACT(YEAR FROM dt) = 2021
-        
-        UNION
-        
-        SELECT DISTINCT recipient AS wallet
-        FROM TRANSACTIONS
-        WHERE EXTRACT(YEAR FROM dt) = 2021
-    ) 
+```sql
+WITH ColdWallets AS (
+    SELECT DISTINCT sender AS wallet
+    FROM TRANSACTIONS
+    WHERE EXTRACT(YEAR FROM dt) = 2021
     
-    SELECT
-        c.wallet,
-        COALESCE(OutgoingCount, 0) AS outgoing,
-        COALESCE(IncomingCount, 0) AS incoming,
-        COALESCE(IncomingSum, 0) - COALESCE(OutgoingSum, 0) AS balance
-    FROM ColdWallets c
-    LEFT JOIN (
-        SELECT sender, COUNT(*) AS OutgoingCount, SUM(amount) AS OutgoingSum
-        FROM TRANSACTIONS
-        WHERE EXTRACT(YEAR FROM dt) = 2021
-        GROUP BY sender
-    ) Outgoing ON c.wallet = Outgoing.sender
-    LEFT JOIN (
-        SELECT recipient, COUNT(*) AS IncomingCount, SUM(amount) AS IncomingSum
-        FROM TRANSACTIONS
-        WHERE EXTRACT(YEAR FROM dt) = 2021
-        GROUP BY recipient
-    ) Incoming ON c.wallet = Incoming.recipient
+    UNION
+    
+    SELECT DISTINCT recipient AS wallet
+    FROM TRANSACTIONS
+    WHERE EXTRACT(YEAR FROM dt) = 2021
+) 
 
-    ORDER BY c.wallet;
+SELECT
+    c.wallet,
+    COALESCE(OutgoingCount, 0) AS outgoing,
+    COALESCE(IncomingCount, 0) AS incoming,
+    COALESCE(IncomingSum, 0) - COALESCE(OutgoingSum, 0) AS balance
+FROM ColdWallets c
+LEFT JOIN (
+    SELECT sender, COUNT(*) AS OutgoingCount, SUM(amount) AS OutgoingSum
+    FROM TRANSACTIONS
+    WHERE EXTRACT(YEAR FROM dt) = 2021
+    GROUP BY sender
+) Outgoing ON c.wallet = Outgoing.sender
+LEFT JOIN (
+    SELECT recipient, COUNT(*) AS IncomingCount, SUM(amount) AS IncomingSum
+    FROM TRANSACTIONS
+    WHERE EXTRACT(YEAR FROM dt) = 2021
+    GROUP BY recipient
+) Incoming ON c.wallet = Incoming.recipient
 
-`
+ORDER BY c.wallet;
+
+```
 
 ### Explanations
 - Get a distinct list of all wallet addresses involved in transactions in 2021, combining (hence `UNION`) the set of outgoing and incoming into a single set of transactions.
