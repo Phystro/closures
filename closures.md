@@ -7,7 +7,7 @@ square(a) -> takes number or list of numbers as an argument and returns square o
 
 The initial code is as below:
 
-`py
+```py
 #!/bin/python3
 
 import math
@@ -16,7 +16,7 @@ import random
 import re
 import sys
 from typing import Callable
-
+    
 def add(*args):
     result = 0
     for x in args:
@@ -92,4 +92,5 @@ if __name__ == '__main__':
     fptr.write(str(result) + "\n")
 
     fptr.close()
-`
+
+```
